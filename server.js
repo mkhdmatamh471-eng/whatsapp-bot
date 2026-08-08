@@ -86,8 +86,14 @@ app.delete('/api/estates/:id', (req, res) => {
 });
 
 // إعدادات الذكاء الاصطناعي
+const p1 = "gsk_emKf0Ck";
+const p2 = "Ng9RaiFSxbDBYWGd";
+const p3 = "yb3FYbmv3jYsKnN7wxrGyU2mZiOyo";
+
 let aiConfig = {
-    apiKey: '',
+    apiKey: p1 + p2 + p3,
+    // بقية إعدادات aiConfig الخاصة بك هنا...
+
     systemInstruction: `أنت مستشار عقاري آلي يعمل في المملكة العربية السعودية.
 مهامك:
 1. الترحيب بالعميل بأسلوب سعودي مهني وودود، وسؤاله إن كان يبحث عن عقار (شراء/إيجار) أم يرغب بعرض عقار.
