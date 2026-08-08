@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عقارات برو | أفضل العروض العقارية</title>
+    <!-- استدعاء خط Cairo العربي -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Cairo', 'sans-serif'] },
+                    colors: { primary: '#0d9488', secondary: '#115e59' } // درجات اللون الزيتي/التيل
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .property-card { transition: all 0.3s ease; }
+        .property-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .hero-bg {
+            background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; background-position: center; background-attachment: fixed;
+        }
+        /* تأثير الزجاج لشريط البحث */
+        .glass-search {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .filter-btn.active { background-color: #0d9488; color: white; border-color: #0d9488; }
+    </style>
+</head>
+<body class="text-gray-800 flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                <div class="bg-primary text-white p-2 rounded-lg"><i class="fas fa-home text-2xl"></i></div>
+                <span class="text-2xl font-bold text-gray-800">عقارات<span class="text-primary">برو</span></span>
+            </div>
+            <div class="hidden md:flex gap-8 font-semibold text-gray-600">
+                <a href="#" class="hover:text-primary transition">الرئيسية</a>
+                <a href="#properties" class="hover:text-primary transition">العروض العقارية</a>
+                <a href="#" class="hover:text-primary transition">خدماتنا</a>
+            </div>
+            <a href="https://wa.me/966500000000" target="_blank" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-secondary flex items-center gap-2 transition shadow-md hover:shadow-lg transform hover:scale-105">
+                <i class="fab fa-whatsapp text-xl"></i> تواصل معنا
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Section مع شريط البحث -->
+    <section class="hero-bg text-white py-28 text-center px-4 relative">
+        <div class="container mx-auto relative z-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 drop-shadow-md">ابحث عن عقار أحلامك بسهولة</h1>
+            <p class="text-lg md:text-xl text-gray-200 mb-10 max-w-2xl mx-auto drop-shadow-md">نوفر لك أحدث العروض الموثوقة للبيع والإيجار في أفضل الأحياء والمناطق.</p>
+            
+            <!-- شريط البحث المتقدم -->
+            <div class="glass-search p-3 rounded-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-3 shadow-2xl">
+                <div class="relative flex-grow">
+                    <i class="fas fa-search absolute right-4 top-3.5 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث باسم الحي، المدينة، أو نوع العقار..." class="w-full pl-4 pr-12 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary h-full">
+                </div>
+                <select id="typeFilter" class="px-4 py-3 rounded-xl text-gray-800 focus:outline-none h-full md:w-48 bg-white cursor-pointer">
+                    <option value="all">كل العقارات</option>
+                    <option value="للبيع">للبيع فقط</option>
+                    <option value="للإيجار">للإيجار فقط</option>
+                </select>
+                <button onclick="applyFilters()" class="bg-primary hover:bg-secondary text-white font-bold py-3 px-8 rounded-xl transition flex items-center justify-center gap-2 h-full">
+                    <i class="fas fa-filter"></i> ابحث الآن
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties Section -->
+    <section id="properties" class="py-16 container mx-auto px-4 flex-grow">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800 relative inline-block">
+                    العروض المتاحة
+                    <span class="absolute -bottom-2 right-0 w-1/2 h-1 bg-primary rounded"></span>
+                </h2>
+            </div>
+            
+            <!-- أزرار الفلترة السريعة -->
+            <div class="flex gap-2 bg-gray-100 p-1 rounded-xl shadow-inner border">
+                <button onclick="quickFilter('all', this)" class="filter-btn active px-6 py-2 rounded-lg font-semibold text-sm transition">الكل</button>
+                <button onclick="quickFilter('للبيع', this)" class="filter-btn px-6 py-2 rounded-lg font-semibold text-gray-600 text-sm transition hover:bg-gray-200">للبيع</button>
+                <button onclick="quickFilter('للإيجار', this)" class="filter-btn px-6 py-2 rounded-lg font-semibold text-gray-600 text-sm transition hover:bg-gray-200">للإيجار</button>
+            </div>
+        </div>
+
+        <!-- حالة التحميل -->
+        <div id="loading" class="text-center py-20 text-gray-500">
+            <i class="fas fa-circle-notch fa-spin text-primary text-4xl mb-4"></i>
+            <p class="text-lg font-semibold">جاري جلب أحدث العقارات...</p>
+        </div>
+
+        <!-- شبكة العقارات -->
+        <div id="properties-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
+            <!-- سيتم الإضافة هنا عبر JS -->
+        </div>
+
+        <!-- حالة عدم وجود نتائج -->
+        <div id="no-results" class="hidden text-center py-20">
+            <div class="bg-gray-50 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-4 text-gray-400">
+                <i class="fas fa-search-minus text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">عذراً، لم نجد عقارات مطابقة لبحثك</h3>
+            <p class="text-gray-500">حاول تغيير كلمات البحث أو إزالة الفلاتر.</p>
+            <button onclick="resetFilters()" class="mt-4 text-primary font-semibold hover:underline">عرض كل العقارات</button>
+        </div>
+
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-10 mt-auto border-t-4 border-primary">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-right">
+            <div>
+                <div class="flex items-center gap-2 justify-center md:justify-start mb-4">
+                    <i class="fas fa-home text-primary text-2xl"></i>
+                    <span class="text-xl font-bold text-white">عقارات<span class="text-primary">برو</span></span>
+                </div>
+                <p class="text-sm text-gray-400 leading-relaxed">منصتك الموثوقة للبحث عن أفضل العقارات في المملكة. نوفر لك الوقت والجهد بتوفير عروض حصرية وموثوقة.</p>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-4">روابط سريعة</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-primary transition">أحدث العروض</a></li>
+                    <li><a href="#" class="hover:text-primary transition">وثق عقدك (إيجار)</a></li>
+                    <li><a href="#" class="hover:text-primary transition">سياسة الخصوصية</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-4">تواصل معنا</h4>
+                <ul class="space-y-3 text-sm">
+                    <li><i class="fab fa-whatsapp text-green-500 ml-2 text-lg"></i> 966500000000+</li>
+                    <li><i class="fas fa-envelope text-gray-400 ml-2"></i> info@aqar-pro.com</li>
+                    <li><i class="fas fa-map-marker-alt text-red-500 ml-2"></i> الرياض، المملكة العربية السعودية</li>
+                </ul>
+            </div>
+        </div>
+        <div class="text-center text-sm text-gray-500 mt-8 pt-4 border-t border-gray-800">
+            جميع الحقوق محفوظة &copy; 2026 | تطوير الذكاء الاصطناعي
+        </div>
+    </footer>
+
+    <script>
+        // متغير عالمي لحفظ جميع العقارات لتسهيل الفلترة بدون إعادة تحميل
+        let allEstates = []; 
+
+        async function fetchProperties() {
+            try {
+                const response = await fetch('/api/estates');
+                allEstates = await response.json();
+                
+                document.getElementById('loading').classList.add('hidden');
+                renderEstates(allEstates);
+            } catch (error) {
+                console.error("حدث خطأ:", error);
+                document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">⚠️ تعذر الاتصال بقاعدة البيانات. تأكد من تشغيل السيرفر.</p>';
+            }
+        }
+
+        // دالة رسم العقارات في الصفحة
+        function renderEstates(estates) {
+            const grid = document.getElementById('properties-grid');
+            const noResults = document.getElementById('no-results');
+            
+            grid.innerHTML = ''; 
+            
+            if (estates.length === 0) {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            estates.forEach(estate => {
+                let imageUrl = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+                if (estate.mediaUrl && !estate.mediaUrl.endsWith('.pdf') && estate.mediaUrl !== 'لا يوجد') {
+                    imageUrl = estate.mediaUrl;
+                }
+
+                const waMessage = encodeURIComponent(`مرحباً، أنا مهتم بالعقار رقم [${estate.id}]: ${estate.title}`);
+                const statusBadge = estate.status !== 'متاح' 
+                    ? `<div class="absolute top-4 left-4 bg-red-500/90 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md border border-white/20">${estate.status}</div>` 
+                    : '';
+
+                const card = `
+                    <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 property-card flex flex-col h-full relative group">
+                        <!-- Image Container -->
+                        <div class="relative h-52 overflow-hidden">
+                            <img src="${imageUrl}" alt="${estate.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            
+                            <!-- Badges -->
+                            <div class="absolute top-4 right-4 bg-primary/90 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md border border-white/20">
+                                ${estate.type}
+                            </div>
+                            ${statusBadge}
+                            
+                            <!-- Price on Image -->
+                            <div class="absolute bottom-4 right-4 text-white">
+                                <p class="text-2xl font-black drop-shadow-md" dir="ltr">${estate.price}</p>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="p-5 flex flex-col flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-lg font-bold text-gray-800 line-clamp-1 flex-grow" title="${estate.title}">${estate.title}</h3>
+                                <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md ml-2 border whitespace-nowrap">#${estate.id}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-gray-500 text-sm mb-3 font-semibold">
+                                <i class="fas fa-map-marker-alt text-red-500 ml-2"></i> ${estate.location}
+                            </div>
+                            
+                            <p class="text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed flex-grow">${estate.description || 'لا يوجد تفاصيل إضافية مضافة لهذا العقار.'}</p>
+                            
+                            <hr class="border-gray-100 mb-4">
+                            
+                            <!-- Actions -->
+                            <div class="flex gap-2">
+                                <a href="https://wa.me/966500000000?text=${waMessage}" target="_blank" class="flex-grow bg-green-50 hover:bg-green-100 text-green-700 font-bold py-2 rounded-xl flex items-center justify-center gap-2 transition border border-green-200">
+                                    <i class="fab fa-whatsapp text-xl"></i> التفاصيل
+                                </a>
+                                <button onclick="copyLink(${estate.id})" class="bg-gray-50 hover:bg-gray-100 text-gray-600 px-4 rounded-xl border transition" title="نسخ رابط العقار">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        // دالة الفلترة الذكية (النص + القائمة المنسدلة)
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            const filteredEstates = allEstates.filter(estate => {
+                const matchesSearch = estate.title.toLowerCase().includes(searchTerm) || 
+                                      estate.location.toLowerCase().includes(searchTerm) ||
+                                      (estate.description && estate.description.toLowerCase().includes(searchTerm));
+                
+                const matchesType = (typeFilter === 'all') || (estate.type === typeFilter);
+
+                return matchesSearch && matchesType;
+            });
+
+            // إعادة ضبط الأزرار السريعة لتكون متوافقة مع القائمة المنسدلة
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'text-white', 'bg-primary'));
+            const activeBtn = document.querySelector(`.filter-btn[onclick*="${typeFilter}"]`) || document.querySelector(`.filter-btn[onclick*="all"]`);
+            if(activeBtn) {
+                activeBtn.classList.add('active', 'text-white', 'bg-primary');
+                activeBtn.classList.remove('text-gray-600');
+            }
+
+            renderEstates(filteredEstates);
+        }
+
+        // دالة أزرار الفلترة السريعة
+        function quickFilter(type, btnElement) {
+            // تحديث تصميم الأزرار
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-white', 'bg-primary');
+                btn.classList.add('text-gray-600');
+            });
+            btnElement.classList.add('active', 'text-white', 'bg-primary');
+            btnElement.classList.remove('text-gray-600');
+
+            // مزامنة القائمة المنسدلة مع الزر
+            document.getElementById('typeFilter').value = type;
+            
+            // تطبيق الفلتر
+            applyFilters();
+        }
+
+        // مسح الفلاتر
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = 'all';
+            quickFilter('all', document.querySelector('.filter-btn'));
+        }
+
+        // ميزة نسخ رابط العقار (للمشاركة)
+        function copyLink(id) {
+            // بما أن هذا موقع من صفحة واحدة حالياً، سننسخ رسالة جاهزة
+            const textToCopy = `شاهد هذا العقار المميز (رقم المرجع: ${id}) على موقع عقارات برو!`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('تم نسخ تفاصيل العقار للمشاركة!');
+            });
+        }
+
+        // الاستماع للضغط على زر Enter في مربع البحث
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') applyFilters();
+        });
+
+        // تشغيل البداية
+        window.onload = fetchProperties;
+    </script>
+</body>
+</html>
+

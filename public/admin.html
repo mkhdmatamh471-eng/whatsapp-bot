@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة | البوت العقاري</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style> body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f3f4f6; } </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-cogs"></i> إدارة النظام العقاري
+        </div>
+        <div class="flex gap-4">
+            <a href="/" class="hover:text-teal-400"><i class="fas fa-comments"></i> محاكي البوت</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+        
+        <!-- Column 1: Connection & AI Settings -->
+        <div class="space-y-6">
+            <!-- WhatsApp Connection -->
+            <div class="bg-white p-5 rounded-lg shadow-md border-t-4 border-green-500">
+                <h2 class="text-lg font-bold mb-4"><i class="fab fa-whatsapp text-green-500"></i> ربط الواتساب</h2>
+                <div id="wa-status" class="mb-3 text-sm font-semibold text-gray-600">الحالة: جاري التحقق...</div>
+                <div class="flex gap-2">
+                    <input type="text" id="phone-number" placeholder="رقم الجوال (مثل: 966500000000)" class="w-full border p-2 rounded text-sm">
+                    <button onclick="requestPairing()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">ربط</button>
+                </div>
+                <div id="pairing-code-display" class="mt-4 hidden text-center">
+                    <p class="text-xs text-gray-500 mb-1">أدخل هذا الكود في إشعارات الواتساب:</p>
+                    <div id="code-box" class="text-3xl font-mono font-bold tracking-widest bg-gray-100 py-3 rounded text-green-700"></div>
+                </div>
+                <button onclick="resetWaSession()" class="mt-4 text-xs text-red-500 hover:underline w-full text-right">تسجيل الخروج ومسح الجلسة</button>
+            </div>
+
+            <!-- AI Settings -->
+            <div class="bg-white p-5 rounded-lg shadow-md border-t-4 border-blue-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold"><i class="fas fa-brain text-blue-500"></i> إعدادات الذكاء الاصطناعي</h2>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="ai-toggle" class="sr-only peer" onchange="toggleAI(this.checked)">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-500 mb-2">تعليمات وتوجيهات البوت (System Prompt):</p>
+                <textarea id="ai-instruction" rows="6" class="w-full border p-2 rounded text-sm mb-2" placeholder="اكتب التعليمات هنا..."></textarea>
+                <button onclick="saveAIConfig()" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">حفظ التعليمات</button>
+            </div>
+        </div>
+
+        <!-- Column 2 & 3: Properties & Leads -->
+        <div class="md:col-span-2 space-y-6">
+            
+            <!-- Real Estate Management -->
+            <div class="bg-white p-5 rounded-lg shadow-md border-t-4 border-teal-500">
+                <h2 class="text-lg font-bold mb-4"><i class="fas fa-building text-teal-500"></i> إدارة العقارات (قاعدة البيانات)</h2>
+                
+                <!-- Add Form -->
+                <form id="estate-form" onsubmit="addEstate(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 bg-gray-50 p-4 rounded">
+                    <input type="text" id="e-title" placeholder="عنوان العقار (مثال: فيلا للبيع بالياسمين)" required class="border p-2 rounded text-sm">
+                    <select id="e-type" class="border p-2 rounded text-sm">
+                        <option value="للبيع">للبيع</option>
+                        <option value="للإيجار">للإيجار</option>
+                    </select>
+                    <input type="text" id="e-price" placeholder="السعر (مثال: 1,500,000 ريال)" required class="border p-2 rounded text-sm">
+                    <input type="text" id="e-location" placeholder="الموقع / الحي" required class="border p-2 rounded text-sm">
+                    <input type="text" id="e-media" placeholder="رابط الصورة أو الـ PDF (اختياري)" class="border p-2 rounded text-sm">
+                    <button type="submit" class="bg-teal-600 text-white py-2 rounded hover:bg-teal-700 font-semibold text-sm">إضافة العقار</button>
+                    <textarea id="e-desc" placeholder="وصف وتفاصيل العقار..." class="border p-2 rounded text-sm md:col-span-3"></textarea>
+                </form>
+
+                <!-- Estates Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left rtl:text-right text-gray-500 border">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 border">ID</th>
+                                <th class="px-4 py-2 border">العنوان</th>
+                                <th class="px-4 py-2 border">النوع</th>
+                                <th class="px-4 py-2 border">السعر</th>
+                                <th class="px-4 py-2 border">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="estates-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Leads (العملاء المحتملين) -->
+            <div class="bg-white p-5 rounded-lg shadow-md border-t-4 border-yellow-500">
+                <h2 class="text-lg font-bold mb-4"><i class="fas fa-users text-yellow-500"></i> العملاء المهتمين (Leads)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left rtl:text-right text-gray-500 border">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 border">الاسم</th>
+                                <th class="px-4 py-2 border">رقم الجوال</th>
+                                <th class="px-4 py-2 border">الطلب</th>
+                                <th class="px-4 py-2 border">الميزانية</th>
+                                <th class="px-4 py-2 border">الوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Socket Events
+        socket.on('status', (data) => {
+            document.getElementById('wa-status').innerHTML = `الحالة: <span class="${data.connected ? 'text-green-600' : 'text-red-500'}">${data.message}</span>`;
+            if (data.connected) document.getElementById('pairing-code-display').classList.add('hidden');
+        });
+
+        socket.on('pairing-code', (data) => {
+            document.getElementById('pairing-code-display').classList.remove('hidden');
+            document.getElementById('code-box').innerText = data.code;
+        });
+
+        socket.on('ai-status', (data) => {
+            document.getElementById('ai-toggle').checked = data.active;
+        });
+
+        socket.on('new-lead', (lead) => {
+            fetchLeads(); // Refresh leads
+            alert('تم اصطياد عميل جديد: ' + lead.name);
+        });
+
+        // WhatsApp Controls
+        function requestPairing() {
+            const phone = document.getElementById('phone-number').value;
+            if(!phone) return alert('يرجى إدخال رقم الجوال');
+            socket.emit('request-pairing-code', phone);
+        }
+
+        async function resetWaSession() {
+            if(confirm('هل تريد فعلاً مسح جلسة الواتساب وتسجيل الخروج؟')) {
+                await fetch('/api/reset-session', { method: 'POST' });
+                alert('تم مسح الجلسة، يجب إعادة تشغيل السيرفر لضمان التطبيق.');
+            }
+        }
+
+        // AI Controls
+        async function toggleAI(isActive) {
+            await fetch('/api/toggle-ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active: isActive })
+            });
+        }
+
+        async function saveAIConfig() {
+            const systemInstruction = document.getElementById('ai-instruction').value;
+            await fetch('/api/ai-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ systemInstruction })
+            });
+            alert('تم الحفظ بنجاح!');
+        }
+
+        // Estates Management
+        async function fetchEstates() {
+            const res = await fetch('/api/estates');
+            const data = await res.json();
+            const tbody = document.getElementById('estates-list');
+            tbody.innerHTML = '';
+            data.forEach(e => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="px-4 py-2">${e.id}</td>
+                        <td class="px-4 py-2">${e.title}</td>
+                        <td class="px-4 py-2">${e.type}</td>
+                        <td class="px-4 py-2">${e.price}</td>
+                        <td class="px-4 py-2">
+                            <button onclick="deleteEstate(${e.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function addEstate(event) {
+            event.preventDefault();
+            const body = {
+                title: document.getElementById('e-title').value,
+                type: document.getElementById('e-type').value,
+                price: document.getElementById('e-price').value,
+                location: document.getElementById('e-location').value,
+                mediaUrl: document.getElementById('e-media').value,
+                description: document.getElementById('e-desc').value,
+                status: 'متاح'
+            };
+            await fetch('/api/estates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            document.getElementById('estate-form').reset();
+            fetchEstates();
+        }
+
+        async function deleteEstate(id) {
+            if(confirm('حذف هذا العقار؟')) {
+                await fetch(`/api/estates/${id}`, { method: 'DELETE' });
+                fetchEstates();
+            }
+        }
+
+        // Leads Management
+        async function fetchLeads() {
+            const res = await fetch('/api/leads');
+            const leads = await res.json();
+            const tbody = document.getElementById('leads-list');
+            tbody.innerHTML = '';
+            leads.forEach(l => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="px-4 py-2 font-bold">${l.name || '-'}</td>
+                        <td class="px-4 py-2 text-green-600" dir="ltr">${l.phone || '-'}</td>
+                        <td class="px-4 py-2">${l.request || '-'}</td>
+                        <td class="px-4 py-2">${l.budget || '-'}</td>
+                        <td class="px-4 py-2 text-xs text-gray-500">${l.timestamp || '-'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Init
+        window.onload = () => {
+            fetchEstates();
+            fetchLeads();
+            
+            // Set Default System Instruction visually
+            document.getElementById('ai-instruction').value = `أنت مستشار عقاري آلي يعمل في المملكة العربية السعودية.
+مهامك:
+1. الترحيب بالعميل بأسلوب سعودي مهني وودود.
+2. جمع تفاصيل الطلب: (المدينة، الحي المفضل، نوع العقار، الميزانية، عدد الغرف).
+3. طرح العروض المتاحة.`;
+        };
+    </script>
+</body>
+</html>
+
