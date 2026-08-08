@@ -3,109 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المستشار العقاري الآلي</title>
+    <title>إدارة البوت</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; }
-        .chat-container { max-height: 60vh; overflow-y: auto; }
-        .bot-msg { background-color: #ffffff; border-radius: 15px 15px 0 15px; }
-        .user-msg { background-color: #d9fdd3; border-radius: 15px 15px 15px 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="min-h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-teal-700 text-white p-4 shadow-md flex justify-between items-center">
         <div class="flex items-center gap-3">
             <i class="fas fa-robot text-2xl"></i>
-            <h1 class="text-xl font-bold">محاكي البوت العقاري</h1>
+            <h1 class="text-xl font-bold">لوحة تحكم  البوت</h1>
         </div>
-        <div class="flex items-center gap-4">
-            <span id="ai-status-badge" class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-500">جاري التحقق...</span>
-            <a href="/admin.html" class="bg-teal-900 hover:bg-teal-800 px-4 py-2 rounded text-sm transition">لوحة التحكم</a>
+        <div class="flex items-center gap-2">
+            <span id="ai-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-500">جاري التحقق...</span>
         </div>
     </header>
 
-    <!-- Chat Area -->
-    <main class="flex-1 max-w-3xl w-full mx-auto p-4 flex flex-col">
-        <div id="chat-box" class="chat-container flex-1 bg-[#efeae2] p-4 rounded-lg shadow-inner mb-4 flex flex-col gap-3">
-            <div class="text-center text-gray-500 text-sm my-2">تنويه: هذه واجهة تجريبية لمحاكاة ردود الذكاء الاصطناعي</div>
-            <!-- Messages will appear here -->
-        </div>
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-6">
 
-        <!-- Input Area -->
-        <div class="flex gap-2 bg-white p-2 rounded-lg shadow">
-            <button onclick="resetChat()" class="text-gray-500 hover:text-red-500 p-3" title="مسح الذاكرة">
-                <i class="fas fa-trash"></i>
+        <!-- 1. ربط رقم الواتساب -->
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex items-center gap-2 mb-4 text-teal-700 font-bold text-lg border-b pb-2">
+                <i class="fab fa-whatsapp text-2xl text-green-500"></i>
+                <h2>ربط واتساب برقم الهاتف</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف مع الرمز الدولي (بدون +)</label>
+                    <input type="text" id="phone-number" placeholder="مثال: 966500000000" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-teal-500 text-left" dir="ltr">
+                </div>
+                <button onclick="requestPairingCode()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-key"></i> طلب كود الربط
+                </button>
+            </div>
+
+            <!-- عرض حالة الاتصال والكود -->
+            <div id="connection-status-box" class="mt-4 p-3 rounded-lg bg-gray-50 text-sm text-gray-600 hidden">
+                <span id="whatsapp-status-text">جاري الاتصال...</span>
+            </div>
+
+            <div id="pairing-code-box" class="mt-4 p-4 bg-teal-50 border border-teal-200 rounded-lg text-center hidden">
+                <p class="text-sm text-teal-800 mb-1 font-semibold">أدخل هذا الكود في تطبيق الواتساب الخاص بك:</p>
+                <div id="pairing-code-display" class="text-3xl font-mono font-bold tracking-widest text-teal-900 my-2">------</div>
+                <p class="text-xs text-gray-500">(الأجهزة المرتبطة > ربط جهاز > الربط باستخدام رقم الهاتف)</p>
+            </div>
+        </section>
+
+        <!-- 2. تشغيل / إيقاف ردود البوت -->
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div>
+                <h2 class="font-bold text-lg text-gray-800">حالة ردود الذكاء الاصطناعي</h2>
+                <p class="text-sm text-gray-500">عند التعطيل، سيتوقف البوت عن الرد الآلي على رسائل العملاء</p>
+            </div>
+            <button id="toggle-ai-btn" onclick="toggleAI()" class="px-6 py-2.5 rounded-lg font-bold text-white transition bg-gray-500">
+                جاري التحميل...
             </button>
-            <input type="text" id="chat-input" class="flex-1 outline-none px-2" placeholder="اكتب رسالتك هنا..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()" class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-full w-12 h-12 flex items-center justify-center transition">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
+        </section>
+
+        <!-- 3. إعدادات وتعليمات البوت -->
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex items-center gap-2 mb-4 text-teal-700 font-bold text-lg border-b pb-2">
+                <i class="fas fa-brain"></i>
+                <h2>تعليمات وتدريب البوت (System Instructions)</h2>
+            </div>
+            
+            <p class="text-xs text-gray-500 mb-2">اكتب الأوامر والنغمة والشروط التي تريد من البوت اتباعها أثناء الرد على العملاء:</p>
+            <textarea id="system-instruction" rows="7" class="w-full border border-gray-300 rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500 leading-relaxed" placeholder="أدخل تعليمات البوت هنا..."></textarea>
+            
+            <div class="mt-3 flex justify-between items-center">
+                <span id="save-msg" class="text-sm font-semibold"></span>
+                <button onclick="saveInstructions()" class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-6 rounded-lg transition flex items-center gap-2">
+                    <i class="fas fa-save"></i> حفظ التعليمات
+                </button>
+            </div>
+        </section>
+
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const chatBox = document.getElementById('chat-box');
-        const inputField = document.getElementById('chat-input');
-        const aiStatusBadge = document.getElementById('ai-status-badge');
+        let isAiActive = true;
 
+        const aiStatusBadge = document.getElementById('ai-status-badge');
+        const toggleAiBtn = document.getElementById('toggle-ai-btn');
+        const phoneInput = document.getElementById('phone-number');
+        const pairingCodeBox = document.getElementById('pairing-code-box');
+        const pairingCodeDisplay = document.getElementById('pairing-code-display');
+        const statusBox = document.getElementById('connection-status-box');
+        const statusText = document.getElementById('whatsapp-status-text');
+        const systemInstructionInput = document.getElementById('system-instruction');
+        const saveMsg = document.getElementById('save-msg');
+
+        // تعيين التعليمات الافتراضية للواجهة
+        systemInstructionInput.value = `أنت مستشار عقاري آلي يعمل في المملكة العربية السعودية.
+مهامك:
+1. الترحيب بالعميل بأسلوب سعودي مهني وودود، وسؤاله إن كان يبحث عن عقار (شراء/إيجار) أم يرغب بعرض عقار.
+2. جمع تفاصيل الطلب: (المدينة، الحي المفضل، نوع العقار: شقة/فيلا/أرض، الميزانية، عدد الغرف).
+3. طرح العروض: مطابقة طلب العميل مع قائمة العقارات المتاحة وإعطاؤه تفاصيل مبدئية مع ذكر رابط الوسائط إن وجد.
+4. التنويه بأن توثيق العقود يتم عبر منصة "إيجار" أو "بورصة العقارات".
+5. أخذ بيانات العميل الجاد (الاسم ورقم الجوال) وإبلاغه أن الوسيط العقاري سيتواصل معه.`;
+
+        // استقبال حالة الذكاء الاصطناعي
         socket.on('ai-status', (data) => {
-            if (data.active) {
-                aiStatusBadge.textContent = 'البوت نشط';
-                aiStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-green-500';
+            isAiActive = data.active;
+            if (isAiActive) {
+                aiStatusBadge.textContent = 'الذكاء الاصطناعي: نشط';
+                aiStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-green-500';
+                toggleAiBtn.textContent = 'إيقاف البوت';
+                toggleAiBtn.className = 'px-6 py-2.5 rounded-lg font-bold text-white transition bg-red-600 hover:bg-red-700';
             } else {
-                aiStatusBadge.textContent = 'البوت معطل';
-                aiStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-500';
+                aiStatusBadge.textContent = 'الذكاء الاصطناعي: معطل';
+                aiStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-red-500';
+                toggleAiBtn.textContent = 'تشغيل البوت';
+                toggleAiBtn.className = 'px-6 py-2.5 rounded-lg font-bold text-white transition bg-green-600 hover:bg-green-700';
             }
         });
 
-        function appendMessage(sender, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `max-w-[80%] p-3 shadow-sm ${sender === 'user' ? 'user-msg self-end' : 'bot-msg self-start'}`;
-            msgDiv.innerText = text;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        // استقبال حالة اتصال الواتساب
+        socket.on('status', (data) => {
+            statusBox.classList.remove('hidden');
+            statusText.textContent = data.message;
+            if (data.connected) {
+                statusBox.className = 'mt-4 p-3 rounded-lg bg-green-50 text-sm text-green-700 border border-green-200';
+                pairingCodeBox.classList.add('hidden');
+            } else {
+                statusBox.className = 'mt-4 p-3 rounded-lg bg-red-50 text-sm text-red-700 border border-red-200';
+            }
+        });
+
+        // استقبال كود الاقتران
+        socket.on('pairing-code', (data) => {
+            pairingCodeDisplay.textContent = data.code;
+            pairingCodeBox.classList.remove('hidden');
+        });
+
+        // طلب كود الربط
+        function requestPairingCode() {
+            const phone = phoneInput.value.trim();
+            if (!phone) {
+                alert('يرجى إدخال رقم الهاتف أولاً.');
+                return;
+            }
+            statusBox.classList.remove('hidden');
+            statusBox.className = 'mt-4 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 border border-blue-200';
+            statusText.textContent = 'جاري طلب كود الربط من السيرفر...';
+            socket.emit('request-pairing-code', phone);
         }
 
-        async function sendMessage() {
-            const text = inputField.value.trim();
-            if (!text) return;
-
-            appendMessage('user', text);
-            inputField.value = '';
-
+        // تشغيل أو إيقاف البوت
+        async function toggleAI() {
             try {
-                const response = await fetch('/api/test-chat', {
+                const res = await fetch('/api/toggle-ai', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
+                    body: JSON.stringify({ active: !isAiActive })
                 });
-                const data = await response.json();
-                appendMessage('bot', data.reply);
+                const data = await res.json();
             } catch (err) {
-                appendMessage('bot', '⚠️ حدث خطأ في الاتصال بالسيرفر.');
+                alert('حدث خطأ أثناء تغيير حالة البوت');
             }
         }
 
-        async function resetChat() {
-            if(confirm('هل أنت متأكد من مسح ذاكرة المحادثة؟')) {
-                await fetch('/api/test-chat', {
+        // حفظ تعليمات وتدريب البوت
+        async function saveInstructions() {
+            const instruction = systemInstructionInput.value.trim();
+            try {
+                const res = await fetch('/api/ai-config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reset: true })
+                    body: JSON.stringify({ systemInstruction: instruction })
                 });
-                chatBox.innerHTML = '<div class="text-center text-gray-500 text-sm my-2">تم مسح ذاكرة المحادثة</div>';
+                const data = await res.json();
+                if (data.success) {
+                    saveMsg.textContent = '✅ تم حفظ التعليمات بنجاح!';
+                    saveMsg.className = 'text-sm font-semibold text-green-600';
+                    setTimeout(() => { saveMsg.textContent = ''; }, 3000);
+                }
+            } catch (err) {
+                saveMsg.textContent = '❌ فشل حفظ التعليمات';
+                saveMsg.className = 'text-sm font-semibold text-red-600';
             }
-        }
-
-        function handleKeyPress(e) {
-            if (e.key === 'Enter') sendMessage();
         }
     </script>
 </body>
 </html>
-
